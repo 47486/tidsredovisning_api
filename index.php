@@ -17,10 +17,11 @@ if (count($_POST) > 0) {
     $postData = [];
     $metod = RequestMethod::GET;
 }
+// Om postparameter, lägg in post data med post. Annars är postdata tom med get.
 
 // Hämta ruttinformation
 $route = getRoute($uri, $metod);
-var_dump($route->getRoute());
+//var_dump($route->getRoute());
 // Hantera ruttinformationen
 switch ($route->getRoute()) {
     case "/activity/":
