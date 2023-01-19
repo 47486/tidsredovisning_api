@@ -39,28 +39,25 @@ function testActivityFunction(string $funktion): string {
 function test_HamtaAllaAktiviteter(): string {
     $retur = "<h2>test_HamtaAllaAktiviteter</h2>";
     try {
-         $svar=hamtaAlla();
-    
-    
-    // Kontrollera statuskoden
-    if(!$svar->getStatus()===200) {
-        $retur .="<p class='Error'>Felaktig statuskod, förväntade 200, fick {$svar->getStatus()}</p>";
-    } else {
-        $retur .="<p class='ok'>Korrekt statuskod 200</p>";
-    }
-    
-    // Kontrollerar att ingen aktivitet är tom
-    foreach ($svar->getContent() as $kategori) {
-        if ($kategori->kategori==="") {
-            $retur .="<p class='error'>TOM aktivitet!</p>";
+        $svar = hamtaAlla();
+
+        // Kontrollera statuskoden
+        if (!$svar->getStatus() === 200) {
+            $retur .= "<p class='Error'>Felaktig statuskod, förväntade 200, fick {$svar->getStatus()}</p>";
+        } else {
+            $retur .= "<p class='ok'>Korrekt statuskod 200</p>";
         }
-    }
-    
-    
+
+        // Kontrollerar att ingen aktivitet är tom
+        foreach ($svar->getContent() as $kategori) {
+            if ($kategori->kategori === "") {
+                $retur .= "<p class='error'>TOM aktivitet!</p>";
+            }
+        }
     } catch (Exception $ex) {
-        $retur .="<p class='Något gick fel, meddelandet säger: '>{$ex->getMessage()}</p>";
+        $retur .= "<p class='Något gick fel, meddelandet säger: '>{$ex->getMessage()}</p>";
     }
-   
+
     return $retur;
 }
 
@@ -70,46 +67,44 @@ function test_HamtaAllaAktiviteter(): string {
  */
 function test_HamtaEnAktivitet(): string {
     $retur = "<h2>test_HamtaEnAktivitet</h2>";
-    
-    
+
     try {
         // Testa negativt tal
         $svar = hamtaEnSkild(-1);
-        if ($svar->getStatus()===400) {
+        if ($svar->getStatus() === 400) {
             $retur .= "<p class='ok'>Hämta enskild med negativt tal ger förväntat svar 400</p>";
         } else {
-            $retur .= "<p class='error'>Hämta enskild med negativt tal ger {$svar->getStatus()}" 
-            . "inte förväntat svar 400</p>";
+            $retur .= "<p class='error'>Hämta enskild med negativt tal ger {$svar->getStatus()}"
+                    . "inte förväntat svar 400</p>";
         }
         // Testa för stort tal
         $svar = hamtaEnSkild(1000);
-        if ($svar->getStatus()===400) {
+        if ($svar->getStatus() === 400) {
             $retur .= "<p class='ok'>Hämta enskild med för stort tal ger förväntat svar 400</p>";
         } else {
-            $retur .= "<p class='error'>Hämta enskild med för stort tal ger {$svar->getStatus()}" 
-            . "inte förväntat svar 400</p>";
+            $retur .= "<p class='error'>Hämta enskild med för stort tal ger {$svar->getStatus()}"
+                    . "inte förväntat svar 400</p>";
         }
         // Testa bokstäver
         $svar = hamtaEnSkild((int) "sju");
-        if ($svar->getStatus()===400) {
+        if ($svar->getStatus() === 400) {
             $retur .= "<p class='ok'>Hämta enskild med bokstäver ger förväntat svar 400</p>";
         } else {
-            $retur .= "<p class='error'>Hämta enskild med bokstäver tal ger {$svar->getStatus()}" 
-            . "inte förväntat svar 400</p>";
+            $retur .= "<p class='error'>Hämta enskild med bokstäver tal ger {$svar->getStatus()}"
+                    . "inte förväntat svar 400</p>";
         }
         // Testa giltigt tal
-        $svar = hamtaEnSkild((int)"agagagagag");
-        if ($svar->getStatus()===400) {
+        $svar = hamtaEnSkild(3);
+        if ($svar->getStatus() === 200) {
             $retur .= "<p class='ok'>Hämta enskild med 3 ger förväntat svar 200</p>";
         } else {
-            $retur .= "<p class='error'>Hämta enskild med 3 ger {$svar->getStatus()}" 
-            . "inte förväntat svar 200</p>";
+            $retur .= "<p class='error'>Hämta enskild med 3 ger {$svar->getStatus()}"
+                    . "inte förväntat svar 200</p>";
         }
-        
     } catch (Exception $ex) {
-        $retur .="<p class='Något gick fel, meddelandet säger: '>{$ex->getMessage()}</p>";
+        $retur .= "<p class='Något gick fel, meddelandet säger: '>{$ex->getMessage()}</p>";
     }
-    
+
     return $retur;
 }
 
@@ -119,8 +114,41 @@ function test_HamtaEnAktivitet(): string {
  */
 function test_SparaNyAktivitet(): string {
     $retur = "<h2>test_SparaNyAktivitet</h2>";
-    $retur .= "<p class='ok'>Testar spara ny aktivitet</p>";
-    $retur .= "<p class='ok'>Ett test till för spara som givk bra</p>";
+
+    // Testa tom aktivitet
+
+    $aktivitet = "";
+    $svar = sparaNy($aktivitet);
+    if ($svar->getStatus() === 400) {
+        $retur .= "<p class='ok'>Spara tom aktivitet misslyckades som förväntat</p>";
+    } else {
+        $retur .= "<p class='error'>Spara tom aktivitet returnerade {$svar->getStatus()} förväntades 400</p>";
+    }
+
+    // Testa lägg till
+    $db = connectDb();
+    $db->beginTransaction();
+    $aktivitet = "Nissan";
+    $svar = sparaNy($aktivitet);
+    if ($svar->getStatus() === 200) {
+        $retur .= "<p class='ok'>Spara ny aktivitet lyckades som förväntat</p>";
+    } else {
+        $retur .= "<p class='error'>Spara ny aktivitet returnerade {$svar->getStatus()} förväntades 200</p>";
+    }
+    $db->rollBack();
+
+    // Testa lägg till samma
+    $db->beginTransaction();
+    $aktivitet = "Nissan";
+    $svar = sparaNy($aktivitet); // Spara första gången, borde lyckas
+    $svar = sparaNy($aktivitet); // Faktiskt test, funkar det andra gången
+    if ($svar->getStatus() === 400) {
+        $retur .= "<p class='ok'>Spara ny aktivitet misslyckades som förväntat</p>";
+    } else {
+        $retur .= "<p class='error'>Spara ny aktivitet två gånger returnerade {$svar->getStatus()} förväntades 400</p>";
+    }
+    $db->rollBack();
+
     return $retur;
 }
 
@@ -130,7 +158,45 @@ function test_SparaNyAktivitet(): string {
  */
 function test_UppdateraAktivitet(): string {
     $retur = "<h2>test_UppdateraAktivitet</h2>";
-    $retur .= "<p class='ok'>Testar uppdatera aktivitet</p>";
+
+    try {
+        // Testa uppdatera med en ny text i aktivitet
+        $db = connectDb();
+        $db->beginTransaction();
+        $nyPost = sparaNy("Nizze");
+        if ($nyPost->getStatus() !== 200) {
+            throw new Exception("Skapa ny post misslyckades", 10001);
+        }
+        $uppdateringsId = (int) $nyPost->getContent()->id;
+        $svar = uppdatera($uppdateringsId, "Pelle");
+        if ($svar->getStatus() === 200 && $svar->getContent()->result === true) {
+            $retur .= "<p class='ok'>Uppdatera aktivitet lyckades</p>";
+        } else {
+            $retur .= "<p class='error'>Uppdatera aktivitet misslyckades "
+                    . "{$svar->getStatus()} returnerades istället för förväntat 200";
+            if (isset($svar->getContent()->result)) {
+                $retur .= var_export($svar->getContent()->result) . " returnerades istället för förväntat 'true'";
+            } else {
+                $retur .= "{$svar->getStatus()} returnerades istället för förväntat 200";
+            }
+            $retur .= "</p>";
+        }
+
+        $db->rollBack();
+
+        // Testa uppdatera med samma text i aktivitet
+        // Testa med tom aktivitet
+        // Testa med ogiltigt id (-1)
+        // Testa med obefintligt id (100)
+    } catch (Exception $ex) {
+        $db->rollBack();
+        if ($ex->getCode() === 10001) {
+            $retur .= "<p class='error'>Spara ny post misslyckades, uppdatera går inte att testa!!!</p>";
+        } else {
+            $retur .= "<p class='error'>Fel inträffade:<br>{$ex->getMessage()}</p>";
+        }
+    }
+
     return $retur;
 }
 
