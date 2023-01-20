@@ -108,8 +108,9 @@ function hamtaEnskild(int $id): Response {
  */
 function sparaNy(string $aktivitet): Response {
     // Kontrollera indata
+    $kontrolleradAktivitet = trim($aktivitet);
     $kontrolleradAktivitet = filter_var($aktivitet, FILTER_SANITIZE_ENCODED);
-    $kontrolleradAktivitet = trim($kontrolleradAktivitet);
+    
     if($kontrolleradAktivitet==="") {
             $out=new stdClass();
             $out->error=["Fel vid spara", "activity kan inte vara tom"];
@@ -160,13 +161,9 @@ function uppdatera(int $id, string $aktivitet): Response {
         return new Response($out, 400);
     }
     
+    $kontrolleradAktivitet = trim($aktivitet);
     $kontrolleradAktivitet = filter_var($aktivitet, FILTER_SANITIZE_ENCODED);
-    $kontrolleradAktivitet = trim($kontrolleradAktivitet);
-    if($kontrolleradAktivitet==="") {
-            $out=new stdClass();
-            $out->error=["Fel vid spara", "activity kan inte vara tom"];
-            return new Response($out, 400);
-        }
+    
     
     // Koppla mot databas
  try {
@@ -180,12 +177,18 @@ function uppdatera(int $id, string $aktivitet): Response {
     // Returnera svar
     
     $out = new stdClass();
+    if($kontrolleradAktivitet==="") {
+            $out=new stdClass();
+            $out->error=["Fel vid spara", "activity kan inte vara tom"];
+            
+            return new Response($out, 400);
+        }
      if ($antalPoster>0) {
             $out->result=true;
             $out->message = ["Uppdatera lyckades", "$antalPoster poster uppdaterades"];
         } else {
             $out->result = false;
-            $out->error=["Uppdatera lyckades", "0 poster uppdaterades"];
+            $out->error=["Uppdatera 'lyckades'", "0 poster uppdaterades"];
             }
             return new Response($out, 200);
     
