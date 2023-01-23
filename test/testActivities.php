@@ -289,6 +289,59 @@ function test_UppdateraAktivitet(): string {
  */
 function test_RaderaAktivitet(): string {
     $retur = "<h2>test_RaderaAktivitet</h2>";
-    $retur .= "<p class='ok'>Testar radera aktivitet</p>";
+try {
+    // Testa felaktigt ID (-1)
+     $db = connectDb();
+    $db->beginTransaction();
+        $svar = radera(-1);       // Prova att uppdatera
+        if ($svar->getStatus() === 400 ) {
+            $retur .= "<p class='ok'>Radera aktivitet med ogiltigt id (-1) misslyckades som förväntat</p>";
+        } else {
+            $retur .= "<p class='error'>Radera aktivitet med ogiltigt id (-1) returnerade {$svar->getStatus()} istället för förväntat 400";
+        }
+    $db->rollBack();
+    
+    // Testa felaktigt ID (fem)
+    $db->beginTransaction();
+        $svar = radera((int)"fem");       // Prova att uppdatera
+        if ($svar->getStatus() === 400 ) {
+            $retur .= "<p class='ok'>Radera aktivitet med ogiltigt id (fem) misslyckades som förväntat</p>";
+        } else {
+            $retur .= "<p class='error'>Radera aktivitet med ogiltigt id (fem) returnerade {$svar->getStatus()} istället för förväntat 400";
+        }
+    $db->rollBack();
+    
+    // Testa ID som inte finns (9001)
+    $db->beginTransaction();
+        $svar = radera(9001);       // Prova att uppdatera
+        if ($svar->getStatus() === 200 && $svar->getContent()->result===false) {
+            $retur .= "<p class='ok'>Radera aktivitet med ogiltigt id (9001) ger förväntat svar 200 och result=false</p>";
+        } else {
+            $retur .= "<p class='error'>Radera aktivitet med ogiltigt id (9001) returnerade {$svar->getStatus()} istället för förväntat 400";
+        }
+    $db->rollBack();
+    
+    // Testa nyskapat ID
+    $db->beginTransaction();
+
+    $svar = sparaNy("Nizze");
+    $uppdateringsId = (int) $svar->getContent()->id; // Den nya postens id
+        $svar = radera($uppdateringsId);       
+        if ($svar->getStatus() === 200 ) {
+            $retur .= "<p class='ok'>Radera aktivitet med nyskapat id lyckades som förväntat</p>";
+        } else {
+            $retur .= "<p class='error'>Radera aktivitet med nyskapat id returnerade {$svar->getStatus()} istället för förväntat 200";
+        }
+    $db->rollBack();
+    
+} catch (Exception $ex) {
+    $db->rollBack();
+        if ($ex->getCode() === 10001) {
+            $retur .= "<p class='error'>Spara ny post misslyckades, uppdatera går inte att testa!!!</p>";
+        } else {
+            $retur .= "<p class='error'>Fel inträffade:<br>{$ex->getMessage()}</p>";
+        }
+    }
+
     return $retur;
 }
