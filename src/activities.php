@@ -33,15 +33,13 @@ function activities(Route $route, array $postData): Response {
     return new Response("Okänt anrop", 400);
 }
 
-/**
- * Returnerar alla aktiviteter som finns i databasen
- * @return Response
- */
+// Returnerar alla aktiviteter som finns i databasen
+
 function hamtaAlla(): Response {
     //Koppla mot databasen
     $db=connectDb();
     
-    //Hämta alla poster från tabellen
+    //Hämta alla kategorier från tabellen
     
     $result=$db->query("SELECT ID, kategori from kategorier ORDER BY ID");
     
@@ -59,14 +57,11 @@ function hamtaAlla(): Response {
     return new Response($retur, 200);
 }
 
-/**
- * Returnerar en enskild aktivitet som finns i databasen
- * @param int $id Id för aktiviteten
- * @return Response
- */
+// Returnerar en enskild aktivitet som finns i databasen
 function hamtaEnskild(int $id): Response {
     // Kontrollera indata
     $kollatID= filter_var($id, FILTER_VALIDATE_INT);
+    // !Kollatid är samma sak som if $kollatid == false
     if(!$kollatID || $kollatID < 1) {
         $out=new stdClass();
         $out->error=["Felaktig indata", "$id är inget giltigt heltal"];
@@ -78,16 +73,17 @@ function hamtaEnskild(int $id): Response {
     $stmt=$db->prepare("SELECT id, kategori from kategorier where id=:id");
     if (!$stmt->execute(["id"=>$kollatID])) {
         $out=new stdClass();
-        $out->error=["Fel vid läsning från databasen", implode(",", $db->errorInfo()  )   ];
+        $out->error=["Fel vid läsning från databasen", implode(",", $db->errorInfo())];
         return new Response($out, 400);
     }
     
-    // Sätt utdata och returnera utdata
+    // Sätt utdata och returnera utdata 
+    // "Assignment in condition" är ok för vi kollar om inget tilldelas
     if($row=$stmt->fetch()) {
         $out=new stdClass();
         $out->id=$row["id"];
         $out->activity=$row["kategori"];
-        return new Response($out);
+        return new Response($out, 200);
     } else {
         $out=new stdClass();
         $out->error=["Hittade ingen post med id=$kollatID"];
@@ -218,7 +214,7 @@ try {
     $db = connectDb();
     
     // Skicka radera-kommando
-    $stmt=$db->prepare("DELETE FROM uppgifter WHERE ID=:id");
+    $stmt=$db->prepare("DELETE FROM kategorier WHERE ID=:id");
     $stmt->execute(["id"=>$kollatID]);
     $antalPoster = $stmt->rowCount();
     

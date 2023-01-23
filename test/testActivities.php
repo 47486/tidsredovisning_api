@@ -322,15 +322,19 @@ try {
     $db->rollBack();
     
     // Testa nyskapat ID
+    $db = connectDb();
     $db->beginTransaction();
-
     $svar = sparaNy("Nizze");
+    if ($svar->getStatus() !== 200) {
+            throw new Exception("Skapa ny post misslyckades", 10001);
+        }
     $uppdateringsId = (int) $svar->getContent()->id; // Den nya postens id
-        $svar = radera($uppdateringsId);       
-        if ($svar->getStatus() === 200 ) {
-            $retur .= "<p class='ok'>Radera aktivitet med nyskapat id lyckades som förväntat</p>";
+        $svar = radera($uppdateringsId);
+        if ($svar->getStatus() === 200 && $svar->getContent()->result===true) {
+            
+            $retur .= "<p class='ok'>Radera aktivitet med nyskapat id ger förväntat svar 200 och result=true</p>";
         } else {
-            $retur .= "<p class='error'>Radera aktivitet med nyskapat id returnerade {$svar->getStatus()} istället för förväntat 200";
+            $retur .= "<p class='error'>Radera aktivitet med nyskapat id returnerade {$svar->getStatus()} eller result=false istället för förväntat 200";
         }
     $db->rollBack();
     
