@@ -112,7 +112,7 @@ function hamtaSida(int $sida): Response {
  */
 function hamtaDatum(DateTimeInterface $from, DateTimeInterface $tom): Response {
     // Kolla indata
-    if($from->format('Y-m-d')<$tom->format('Y-m-d')) {
+    if($from->format('Y-m-d')>$tom->format('Y-m-d')) {
         $out=new stdClass();
         $out->error=["Felaktig indata", "Från datum ska vara mindre än till-datum"];
         return new Response($out, 400);

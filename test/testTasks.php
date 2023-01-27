@@ -116,8 +116,8 @@ function test_HamtaAllaUppgifterDatum(): string {
     // Testa datum utan poster => 200 och tom array för tasks
     $datum1=new dateTimeImmutable("1970-01-01");
     $datum2=new dateTimeImmutable("1970-01-01");
+    $svar = hamtaDatum($datum1, $datum2);
      if($svar->getStatus()===200) {
-         var_dump($svar);
             $retur .= "<p class='ok'>Hämta för stort sidnummer (200) gav förväntat svar 200</p>";
             $resultat = $svar->getContent()->tasks;
             if(!$resultat===[]) {
@@ -129,8 +129,8 @@ function test_HamtaAllaUppgifterDatum(): string {
     // Testa giltigt datum med poster => 200 och giltiga egenskaper
     $datum1=new dateTimeImmutable("1970-01-01");
     $datum2=new dateTimeImmutable();
+    $svar = hamtaDatum($datum1, $datum2);
     if($svar->getStatus()===400) {
-            var_dump($svar);
             $retur .= "<p class='error'>Hämta giltigt datum gav {$svar->getStatus()} <br> istället för förväntat svar 200 </p>";
         } else {
             $retur .= "<p class='ok'>Hämta giltigt datum gav förväntat svar 200</p>";
