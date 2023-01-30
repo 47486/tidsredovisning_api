@@ -92,12 +92,6 @@ function hamtaEnskildAktivitet(int $id): Response {
         $out->error=["Hittade ingen post med id=$kollatID"];
         return new Response($out, 400);
     }
-    
-    
-   
-    
-    
-    return new Response("Hämta aktivitet $id", 200);
 }
 
 /**

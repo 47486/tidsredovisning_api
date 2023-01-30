@@ -155,7 +155,45 @@ function hamtaDatum(DateTimeInterface $from, DateTimeInterface $tom): Response {
  * @return Response
  */
 function hamtaEnskildUppgift(int $id): Response {
-    return new Response("Hämta task $id", 200);
+    // Kolla indata
+    $kollatID= filter_var($id, FILTER_VALIDATE_INT);
+    // !Kollatid är samma sak som if $kollatid == false
+    if(!$kollatID || $kollatID < 1) {
+        $out=new stdClass();
+        $out->error=["Felaktig indata", "$id är inget giltigt heltal"];
+        return new Response($out, 400);
+    }
+    
+    // Hämta mot databas
+    $db = connectDb();
+    
+    // Förbered och exekvera SQL
+    $stmt=$db->prepare("SELECT u.id, beskrivning, tid, datum, kategoriId, kategori "
+            . " from uppgifter u"
+            . " INNER JOIN kategorier k ON kategoriId=k.id"
+            . " where k.id=:id");
+    if (!$stmt->execute(["id"=>$kollatID])) {
+        $out=new stdClass();
+        $out->error=["Fel vid läsning från databasen", implode(",", $db->errorInfo())];
+        return new Response($out, 400);
+    }
+    
+    // Returnera svaret
+    if($row=$stmt->fetch()) {
+        $out=new stdClass();
+        $out->id=$row["id"];
+        $out->activityId=$row["kategoriId"];
+        $out->date=$row["datum"];
+        $out->time=$row["tid"];
+        $out->description=$row["beskrivning"];
+        $out->activity=$row["kategori"];
+                
+        return new Response($out, 200);
+    } else {
+        $out=new stdClass();
+        $out->error=["Fel vid hämtning", "Inga poster returnerades"];
+        return new Response($out, 400); 
+    }
 }
 
 /**
