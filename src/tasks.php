@@ -172,7 +172,7 @@ function hamtaEnskildUppgift(int $id): Response {
     $stmt=$db->prepare("SELECT u.id, beskrivning, tid, datum, kategoriId, kategori "
             . " from uppgifter u"
             . " INNER JOIN kategorier k ON kategoriId=k.id"
-            . " where k.id=:id");
+            . " where u.id=:id");
     if (!$stmt->execute(["id"=>$kollatID])) {
         $out=new stdClass();
         $out->error=["Fel vid läsning från databasen", implode(",", $db->errorInfo())];

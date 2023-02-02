@@ -38,21 +38,21 @@ function hamtaSammanstallning(DateTimeInterface $from, DateTimeInterface $tom): 
     $db = connectDb();
 
     // Förbered och exekvera SQL
-    $stmt = $db->prepare("SELECT activity, activityId, "
-            . "SEC_TO_TIME(SUM(TIME_TO_SEC(TIME))) as time "
-            . "FROM tasks t "
-            . "INNER JOIN activities a ON a.id=t.activityId "
-            . "WHERE date BETWEEN :fran AND :till "
-            . "GROUP BY activityId ");
+    $stmt = $db->prepare("SELECT kategori, kategoriID, "
+            . "SEC_TO_TIME(SUM(TIME_TO_SEC(tid))) as tid "
+	    . "FROM uppgifter u "
+	    . "INNER JOIN kategorier k ON k.id=u.kategoriID "
+	    . "WHERE datum BETWEEN :fran AND :till "
+	    . "GROUP BY kategoriID ");
     $stmt->execute(["fran" => $from->format('Y-m-d'), "till" => $tom->format('Y-m-d')]);
 
     // Kontrollera svar och generera utdata
     $poster = [];
     while ($row = $stmt->fetch()) {
         $rec = new stdClass();
-        $rec->activityId = $row["activityId"];
-        $rec->activity = $row["activity"];
-        $rec->time = substr($row["time"], 0, 5);
+        $rec->activityId = $row["kategoriID"];
+        $rec->activity = $row["kategori"];
+        $rec->time = substr($row["tid"], 0, 5);
         $poster[] = $rec;
     }
 
